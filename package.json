@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "grammy": "^1.42.0",
+    "node-telegram-bot-api": "^0.67.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}
