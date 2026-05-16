@@ -4,4 +4,8 @@ const mainKeyboard = new InlineKeyboard()
   .text("💰 Wallet", "wallet")
   .text("🖨️ Print", "print");
 
-module.exports = { mainKeyboard };
+const walletKeyboard = new InlineKeyboard()
+  .text("Check Balance", "checkbal")
+  .text("Topup", "topup");
+
+module.exports = { mainKeyboard,walletKeyboard };
