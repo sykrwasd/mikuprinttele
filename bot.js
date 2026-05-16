@@ -2,8 +2,9 @@ const { Bot } = require("grammy");
 
 const startHandler = require("./handlers/start");
 const walletHandler = require("./handlers/wallet/wallet");
-const printHandler = require("./handlers/print");
-const uploadHandler = require("./handlers/upload");
+const printHandler = require("./handlers/print/print");
+const uploadHandler = require("./handlers/print/upload");
+const printTypeHandler = require("./handlers/print/printtype");
 const topupHandler = require("./handlers/wallet/topup")
 const checkBalHandler = require("./handlers/wallet/checkbal")
 const testHandler = require("./handlers/test")
@@ -15,6 +16,7 @@ startHandler(bot);
 walletHandler(bot);
 printHandler(bot);
 uploadHandler(bot);
+printTypeHandler(bot);
 topupHandler(bot)
 checkBalHandler(bot)
 testHandler(bot)

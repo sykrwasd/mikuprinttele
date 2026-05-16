@@ -1,9 +1,13 @@
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
-const userState = require("../state");
+const userState = require("../../state");
 const pdf = require("pdf-parse");
-const { homeKeyboard, cancelKeyboard } = require("../keyboard");
+const {
+  printKeyboard,
+  homeKeyboard,
+  cancelKeyboard,
+} = require("../../keyboard");
 
 function uploadHandler(bot) {
   // Handle document uploads
@@ -38,7 +42,7 @@ function uploadHandler(bot) {
       const safeFileName = path
         .basename(file.file_name)
         .replace(/[^a-zA-Z0-9._-]/g, "_");
-      const savePath = path.join(__dirname, "../uploads", safeFileName);
+      const savePath = path.join(__dirname, "../../uploads", safeFileName);
 
       const response = await axios({
         url: fileUrl,
@@ -60,32 +64,41 @@ function uploadHandler(bot) {
 
           userState.delete(userId);
 
-          
+          userState.set(ctx.from.id, {
+            step: "choose_print_type",
+            pages: pagenum,
+            fileName: safeFileName,
+          });
 
           await ctx.reply(
             `✅ <b>File received!</b>\n` +
               `━━━━━━━━━━━━━━━━━━━\n\n` +
               `📄 <code>${safeFileName}</code>\n` +
               `📑 Pages: <b>${pagenum}</b>\n\n` +
-              `Your print job has been queued.\n` +
-              `<i>We’ll notify you when it’s ready!</i>`,
-            { parse_mode: "HTML", reply_markup: homeKeyboard },
+              `Now choose your <b>print preference</b> below. ⬇️`,
+            { parse_mode: "HTML", reply_markup: printKeyboard },
           );
         } catch (err) {
           console.error("PDF parse error:", err);
           userState.delete(userId);
-          await ctx.reply("\u274c Could not read PDF file. Please try again.", { reply_markup: homeKeyboard });
+          await ctx.reply("\u274c Could not read PDF file. Please try again.", {
+            reply_markup: homeKeyboard,
+          });
         }
       });
 
       writer.on("error", async () => {
         userState.delete(userId);
-        await ctx.reply("❌ Failed to save your file. Please try again.", { reply_markup: homeKeyboard });
+        await ctx.reply("❌ Failed to save your file. Please try again.", {
+          reply_markup: homeKeyboard,
+        });
       });
     } catch (err) {
       console.error(err);
       userState.delete(userId);
-      await ctx.reply("❌ Upload failed. Please try again.", { reply_markup: homeKeyboard });
+      await ctx.reply("❌ Upload failed. Please try again.", {
+        reply_markup: homeKeyboard,
+      });
     }
   });
 
