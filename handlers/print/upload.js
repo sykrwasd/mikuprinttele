@@ -1,8 +1,8 @@
-const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
-const userState = require("../../state");
+const path = require("path");
 const pdf = require("pdf-parse");
+const userState = require("../../state");
+const supabase = require("../../database/db");
 const {
   printKeyboard,
   homeKeyboard,
@@ -15,7 +15,8 @@ function uploadHandler(bot) {
     const userId = ctx.from.id;
 
     // Only process if user is expected to upload
-    if (userState.get(userId) !== "awaiting_upload") return;
+    const currentState = userState.get(userId);
+    if (!currentState || currentState.step !== "awaiting_upload") return;
 
     const file = ctx.message.document;
 
@@ -33,68 +34,67 @@ function uploadHandler(bot) {
     try {
       // Get file info from Telegram
       const telegramFile = await ctx.api.getFile(file.file_id);
-
-      // Build download URL
       const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${telegramFile.file_path}`;
 
-      console.log(fileUrl);
-
-      const safeFileName = path
-        .basename(file.file_name)
-        .replace(/[^a-zA-Z0-9._-]/g, "_");
-      const savePath = path.join(__dirname, "../../uploads", safeFileName);
-
+      // Download the PDF as a raw buffer
       const response = await axios({
         url: fileUrl,
         method: "GET",
-        responseType: "stream",
+        responseType: "arraybuffer",
       });
 
-      const writer = fs.createWriteStream(savePath);
-      response.data.pipe(writer);
+      const fileBuffer = Buffer.from(response.data);
 
-      writer.on("finish", async () => {
-        try {
-          const dataBuffer = fs.readFileSync(savePath);
-          const data = await pdf(dataBuffer);
+      // Count pages before uploading
+      const pdfData = await pdf(fileBuffer);
+      const pagenum = pdfData.numpages;
+      console.log("Total pages:", pagenum);
 
-          const pagenum = data.numpages;
+      // Build a unique storage path: userId/timestamp_filename.pdf
+      const safeFileName = path
+        .basename(file.file_name)
+        .replace(/[^a-zA-Z0-9._-]/g, "_");
+      const storagePath = `${userId}/${Date.now()}_${safeFileName}`;
 
-          console.log("Total pages:", pagenum);
+      // Upload to Supabase Storage bucket called "pdfs"
+      const { error: uploadError } = await supabase.storage
+        .from("pdfs")
+        .upload(storagePath, fileBuffer, {
+          contentType: "application/pdf",
+          upsert: false,
+        });
 
-          userState.delete(userId);
-
-          userState.set(ctx.from.id, {
-            step: "choose_print_type",
-            pages: pagenum,
-            fileName: safeFileName,
-          });
-
-          await ctx.reply(
-            `✅ <b>File received!</b>\n` +
-              `━━━━━━━━━━━━━━━━━━━\n\n` +
-              `📄 <code>${safeFileName}</code>\n` +
-              `📑 Pages: <b>${pagenum}</b>\n\n` +
-              `Now choose your <b>print preference</b> below. ⬇️`,
-            { parse_mode: "HTML", reply_markup: printKeyboard },
-          );
-        } catch (err) {
-          console.error("PDF parse error:", err);
-          userState.delete(userId);
-          await ctx.reply("\u274c Could not read PDF file. Please try again.", {
-            reply_markup: homeKeyboard,
-          });
-        }
-      });
-
-      writer.on("error", async () => {
+      if (uploadError) {
+        console.error("Supabase upload error:", uploadError);
         userState.delete(userId);
-        await ctx.reply("❌ Failed to save your file. Please try again.", {
+        await ctx.reply("❌ Failed to store your file. Please try again.", {
           reply_markup: homeKeyboard,
         });
+        return;
+      }
+
+      console.log("Uploaded to Supabase Storage:", storagePath);
+
+      userState.set(userId, {
+        step: "choose_print_type",
+        pages: pagenum,
+        fileName: safeFileName,
+        storagePath,                          
+        username: ctx.from.username,
+        updatedAt: new Date().toISOString(),
       });
+
+
+      await ctx.reply(
+        `✅ <b>File received!</b>\n` +
+          `━━━━━━━━━━━━━━━━━━━\n\n` +
+          `📄 <code>${safeFileName}</code>\n` +
+          `📑 Pages: <b>${pagenum}</b>\n\n` +
+          `Now choose your <b>print preference</b> below. ⬇️`,
+        { parse_mode: "HTML", reply_markup: printKeyboard },
+      );
     } catch (err) {
-      console.error(err);
+      console.error("Upload handler error:", err);
       userState.delete(userId);
       await ctx.reply("❌ Upload failed. Please try again.", {
         reply_markup: homeKeyboard,
@@ -104,7 +104,8 @@ function uploadHandler(bot) {
 
   // Nudge users who send a photo/other file while awaiting PDF
   bot.on("message:photo", async (ctx) => {
-    if (userState.get(ctx.from.id) !== "awaiting_upload") return;
+    const photoState = userState.get(ctx.from.id);
+    if (!photoState || photoState.step !== "awaiting_upload") return;
     await ctx.reply(
       `❌ Photos are not accepted.\n\nPlease send your file as a <b>PDF document</b>.`,
       { parse_mode: "HTML", reply_markup: cancelKeyboard },

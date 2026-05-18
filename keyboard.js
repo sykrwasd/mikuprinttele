@@ -32,6 +32,14 @@ const changeKeyboard = new InlineKeyboard()
   .row()
   .text("🏠 Home", "home");
 
+// ── Confirm print job ─────────────────────────────────────────
+const confirmKeyboard = new InlineKeyboard()
+  .text("✅ Confirm", "print_confirm")
+  .row()
+  .text("🔄 Change Preference", "print_change")
+  .row()
+  .text("❌ Cancel", "home");
+
 module.exports = {
   mainKeyboard,
   walletKeyboard,
@@ -39,4 +47,5 @@ module.exports = {
   cancelKeyboard,
   printKeyboard,
   changeKeyboard,
+  confirmKeyboard,
 };

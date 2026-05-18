@@ -5,7 +5,8 @@ function printHandler(bot) {
   bot.callbackQuery("print", async (ctx) => {
     try { await ctx.answerCallbackQuery(); } catch (e) {}
 
-    userState.set(ctx.from.id, "awaiting_upload");
+    const state = userState.get(ctx.from.id) || {};
+    userState.set(ctx.from.id, { ...state, step: "awaiting_upload" });
 
     ctx.reply(
       `🖨️ <b>Print a File</b>\n` +

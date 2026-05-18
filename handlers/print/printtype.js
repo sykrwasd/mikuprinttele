@@ -1,5 +1,5 @@
 const userState = require("../../state");
-const { changeKeyboard, printKeyboard, homeKeyboard } = require("../../keyboard");
+const { confirmKeyboard, printKeyboard, homeKeyboard } = require("../../keyboard");
 
 // Pricing constants
 const PRICE_BW = 0.20;
@@ -21,19 +21,19 @@ function printTypeHandler(bot) {
     const { pages, fileName } = state;
     const total = formatTotal(pages, PRICE_BW);
 
-    // Update state to reflect chosen preference
-    userState.set(ctx.from.id, { ...state, preference: "bw" });
+    // Update state → step confirm
+    userState.set(ctx.from.id, { ...state,  preference: "bw" });
 
     await ctx.reply(
-      `🖤 <b>Black & White Selected</b>\n` +
+      `📝 <b>Order Summary</b>\n` +
       `━━━━━━━━━━━━━━━━━━━\n\n` +
       `📄 File: <code>${fileName}</code>\n` +
       `📑 Pages: <b>${pages}</b>\n` +
+      `🖼️ Type: <b>Black &amp; White</b>\n` +
       `💵 Price per page: <code>RM ${PRICE_BW.toFixed(2)}</code>\n\n` +
       `🧾 <b>Estimated Total: RM ${total}</b>\n\n` +
-      `<i>Your print job has been queued!\n` +
-      `We'll notify you when it's ready.</i>`,
-      { parse_mode: "HTML", reply_markup: changeKeyboard }
+      `Tap <b>Confirm</b> to place your order ⬇️`,
+      { parse_mode: "HTML", reply_markup: confirmKeyboard }
     );
   });
 
@@ -47,19 +47,19 @@ function printTypeHandler(bot) {
     const { pages, fileName } = state;
     const total = formatTotal(pages, PRICE_COLOUR);
 
-    // Update state to reflect chosen preference
-    userState.set(ctx.from.id, { ...state, preference: "colour" });
+    // Update state → step confirm
+    userState.set(ctx.from.id, { ...state,  preference: "colour" });
 
     await ctx.reply(
-      `🎨 <b>Colour Selected</b>\n` +
+      `📝 <b>Order Summary</b>\n` +
       `━━━━━━━━━━━━━━━━━━━\n\n` +
       `📄 File: <code>${fileName}</code>\n` +
       `📑 Pages: <b>${pages}</b>\n` +
+      `🎨 Type: <b>Colour</b>\n` +
       `💵 Price per page: <code>RM ${PRICE_COLOUR.toFixed(2)}</code>\n\n` +
       `🧾 <b>Estimated Total: RM ${total}</b>\n\n` +
-      `<i>Your print job has been queued!\n` +
-      `We'll notify you when it's ready.</i>`,
-      { parse_mode: "HTML", reply_markup: changeKeyboard }
+      `Tap <b>Confirm</b> to place your order ⬇️`,
+      { parse_mode: "HTML", reply_markup: confirmKeyboard }
     );
   });
 
