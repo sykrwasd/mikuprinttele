@@ -50,6 +50,8 @@ function printTypeHandler(bot) {
     // Update state → step confirm
     userState.set(ctx.from.id, { ...state,  preference: "bw" });
 
+    console.log("crrent state",userState)
+
     const wallet = await getUser_Wallet(ctx);
     const balanceCents = wallet?.balance_cents ?? 0;
     const balance = balanceCents / 100;

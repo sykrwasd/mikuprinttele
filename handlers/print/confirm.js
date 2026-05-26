@@ -84,7 +84,7 @@ function confirmHandler(bot) {
 
     const { data, error } = await supabase.from("print").insert([
       {
-        username: state.username,
+        user_id: state.userid,
         file_name: state.fileName,
         file_path: state.storagePath,
         page_num: state.pages,

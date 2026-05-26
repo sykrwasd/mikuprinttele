@@ -15,8 +15,8 @@ function uploadHandler(bot) {
     const userId = ctx.from.id;
 
     // Only process if user is expected to upload
-    const currentState = userState.get(userId);
-    if (!currentState || currentState.step !== "awaiting_upload") return;
+    const state = userState.get(ctx.from.id) || {};
+    if (!state || state.step !== "awaiting_upload") return;
 
     const file = ctx.message.document;
 
@@ -75,13 +75,12 @@ function uploadHandler(bot) {
 
       console.log("Uploaded to Supabase Storage:", storagePath);
 
-      userState.set(userId, {
+      userState.set(ctx.from.id, {
+        ...state,
         step: "choose_print_type",
         pages: pagenum,
         fileName: safeFileName,
         storagePath,                          
-        username: ctx.from.username,
-        updatedAt: new Date().toISOString(),
       });
 
 

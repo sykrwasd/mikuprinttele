@@ -1,5 +1,6 @@
 const { mainKeyboard } = require("../keyboard");
 const supabase = require("../database/db");
+const userState = require("../state");
 
 async function checkDB(ctx) {
   const name = ctx.from?.first_name ?? "there";
@@ -53,6 +54,11 @@ function startHandler(bot) {
     const name = ctx.from?.first_name ?? "there";
 
     const user = await checkDB(ctx);
+
+    const state = userState.get(ctx.from.id) || {};
+    userState.set(ctx.from.id, { ...state, userid: user.id});
+    console.log(userState)
+
     ctx.reply(
       `🖨️ <b>MikuPrint</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n\n` +
@@ -74,6 +80,12 @@ function startHandler(bot) {
     } catch (e) {}
     const name = ctx.from?.first_name ?? "there";
     const user = await checkDB(ctx);
+
+    
+    const state = userState.get(ctx.from.id) || {};
+    userState.set(ctx.from.id, { ...state, userid: user.id});
+
+    
 
     ctx.reply(
       `🖨️ <b>MikuPrint</b>\n` +
