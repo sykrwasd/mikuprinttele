@@ -1,5 +1,6 @@
 const userState = require("../../state");
 const { confirmKeyboard, printKeyboard, homeKeyboard } = require("../../keyboard");
+const supabase = require("../../database/db")
 
 // Pricing constants
 const PRICE_BW = 0.20;
@@ -8,6 +9,31 @@ const PRICE_COLOUR = 0.50;
 function formatTotal(pages, pricePerPage) {
   return (pages * pricePerPage).toFixed(2);
 }
+
+async function getUser_Wallet(ctx) {
+  const telegramId = ctx.from.id;
+
+  const { data: userid, error } = await supabase
+    .from("users")
+    .select("id")
+    .eq("telegram_id", telegramId)
+    .single();
+
+  //console.log(userid);
+
+  const { data: wallet, error: walletError } = await supabase
+    .from("wallets")
+    .select("*")
+    .eq("user_id", userid.id)
+    .single();
+
+  //console.log(wallet);
+
+  if (error) throw error;
+
+  return wallet;
+}
+
 
 function printTypeHandler(bot) {
 
@@ -24,6 +50,11 @@ function printTypeHandler(bot) {
     // Update state → step confirm
     userState.set(ctx.from.id, { ...state,  preference: "bw" });
 
+    const wallet = await getUser_Wallet(ctx);
+    const balanceCents = wallet?.balance_cents ?? 0;
+    const balance = balanceCents / 100;
+
+
     await ctx.reply(
       `📝 <b>Order Summary</b>\n` +
       `━━━━━━━━━━━━━━━━━━━\n\n` +
@@ -31,7 +62,8 @@ function printTypeHandler(bot) {
       `📑 Pages: <b>${pages}</b>\n` +
       `🖼️ Type: <b>Black &amp; White</b>\n` +
       `💵 Price per page: <code>RM ${PRICE_BW.toFixed(2)}</code>\n\n` +
-      `🧾 <b>Estimated Total: RM ${total}</b>\n\n` +
+      `🧾 <b>Estimated Total: RM ${total}</b>\n` +
+      `💰 <b>Account Balance: RM ${balance}</b>\n\n` +
       `Tap <b>Confirm</b> to place your order ⬇️`,
       { parse_mode: "HTML", reply_markup: confirmKeyboard }
     );
@@ -63,7 +95,6 @@ function printTypeHandler(bot) {
     );
   });
 
-  // ── Change Preference ─────────────────────────────────────
   bot.callbackQuery("print_change", async (ctx) => {
     try { await ctx.answerCallbackQuery(); } catch (e) {}
 

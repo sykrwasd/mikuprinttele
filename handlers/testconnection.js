@@ -1,9 +1,10 @@
-const supabase = require("../database/db")
-
+const supabase = require("../database/db");
 
 async function testConnection() {
   try {
-        const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await supabase
+      .from("wallets")
+      .select("count", { count: "exact", head: true });
 
     if (error) {
       console.log("❌ Connection failed");
@@ -11,8 +12,15 @@ async function testConnection() {
       return;
     }
 
+    const { data:wallet, error:errorwallet } = await supabase
+  .from("wallets")
+  .select("*")
+  .eq("user_id", "f31f8cd4-a5e6-4a04-93b4-c0c9d4e97ef8")
+  .single();
+
+  console.log(wallet)
+
     console.log("✅ Supabase connected!");
-    console.log(data);
   } catch (err) {
     console.log("❌ Unexpected error");
     console.log(err);

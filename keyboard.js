@@ -7,7 +7,6 @@ const mainKeyboard = new InlineKeyboard()
 
 // ── Wallet sub-menu ──────────────────────────────────────────
 const walletKeyboard = new InlineKeyboard()
-  .text("💰 Check Balance", "checkbal")
   .text("💸 Top Up", "topup")
   .row()
   .text("🏠 Home", "home");
