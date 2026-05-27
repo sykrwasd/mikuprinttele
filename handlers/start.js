@@ -1,6 +1,24 @@
 const { mainKeyboard } = require("../keyboard");
 const supabase = require("../database/db");
 const userState = require("../state");
+const notifyAdmin = require("../admin")
+
+// async function notifyAdmin(message) {
+//   await fetch(
+//     `https://api.telegram.org/bot${ADMIN_TELEGRAM_BOT}/sendMessage`,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         chat_id: ADMIN_CHAT_ID,
+//         text: message,
+//       }),
+//     }
+//   );
+// }
+
 
 async function checkDB(ctx) {
   const name = ctx.from?.first_name ?? "there";
@@ -12,8 +30,20 @@ async function checkDB(ctx) {
     .eq("telegram_id", telegramId)
     .single();
 
+
   //error PGRST116 = The result contains 0 rows
   if (error && error.code === "PGRST116") {
+
+    await notifyAdmin(`
+🆕 New User Registered
+
+🧑 Username: @${ctx.from.username ?? "N/A"}
+🆔 Telegram ID: ${telegramId}
+
+📅 First Seen: ${new Date().toLocaleString("en-MY", {
+  timeZone: "Asia/Kuala_Lumpur",
+})}
+`);
     const { data: newUser, error: createError } = await supabase
       .from("users")
       .insert([
@@ -41,6 +71,8 @@ async function checkDB(ctx) {
     ]);
 
     console.log("dah add mamat/minah ni dalam database");
+
+
   } else {
     console.log("dah ada data mamat/minah ni");
   }
