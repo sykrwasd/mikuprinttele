@@ -11,7 +11,7 @@ app.use((req, res, next) => {
 });
 
 // Body parsers
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, type: "*/*" }));
 app.use(express.json());
 
 // ✅ USE YOUR REAL CALLBACK LOGIC
