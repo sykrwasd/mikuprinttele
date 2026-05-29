@@ -1,35 +1,31 @@
 require("dotenv").config();
 const express = require("express");
+const { paymentCallback } = require("./toyyibtest");
 
 const app = express();
 
-// Debug middleware (put this FIRST)
+// Debug middleware
 app.use((req, res, next) => {
   console.log("Headers:", req.headers);
   next();
 });
 
-// Parse form-urlencoded (ToyyibPay usually sends this)
+// Body parsers
 app.use(express.urlencoded({ extended: true }));
-
-// Parse JSON just in case
 app.use(express.json());
 
-app.post("/payment/callback", (req, res) => {
-  console.log("BODY:", req.body);
+// ✅ USE YOUR REAL CALLBACK LOGIC
+app.post("/payment/callback", paymentCallback);
 
-  res.status(200).send("OK");
-});
-
+// Return URL (user redirect only)
 app.get("/payment/return", (req, res) => {
   res.send("✅ Payment received! Return to Telegram.");
 });
 
-
+// Health check
 app.get("/health", (req, res) => {
-  res.send("hello, sihat ");
+  res.send("hello, sihat");
 });
-
 
 const PORT = process.env.PORT || 3000;
 
