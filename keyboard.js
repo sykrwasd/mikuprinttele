@@ -39,6 +39,12 @@ const confirmKeyboard = new InlineKeyboard()
   .row()
   .text("❌ Cancel", "home");
 
+const topupKeyboard = new InlineKeyboard()
+  .text("RM10", "ten")
+  .text("RM5", "five")
+  .row()
+  .text("❌ Cancel", "home");
+
 module.exports = {
   mainKeyboard,
   walletKeyboard,
@@ -47,4 +53,5 @@ module.exports = {
   printKeyboard,
   changeKeyboard,
   confirmKeyboard,
+  topupKeyboard
 };

@@ -122,7 +122,7 @@ function confirmHandler(bot) {
         `📑 Pages: <b>${pages}</b>\n` +
         `🖼️ Type: <b>${prefLabel}</b>\n` +
         `💵 Price/page: <code>RM ${pricePerPage.toFixed(2)}</code>\n` +
-        `🧾 <b>Wallet Balance: RM ${(balance - pricePerPage).toFixed(2)}</b>\n` +
+        `🧾 <b>Wallet Balance: RM ${(balance - total).toFixed(2)}</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
         `🧾 <b>TOTAL: RM ${total.toFixed(2)}</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n\n` +
