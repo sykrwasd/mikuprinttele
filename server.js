@@ -25,6 +25,12 @@ app.get("/payment/return", (req, res) => {
   res.send("✅ Payment received! Return to Telegram.");
 });
 
+
+app.get("/health", (req, res) => {
+  res.send("hello, sihat ");
+});
+
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
