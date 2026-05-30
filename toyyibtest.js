@@ -83,7 +83,7 @@ async function paymentCallback(req, res) {
       console.log("UPDATED")
 
       // Credit the wallet in Supabase
-      let { data: user, error } = await supabase
+      let { data: user, error:fetchError } = await supabase
       .from("users")
       .select("*")
       .eq("telegram_id", telegramId)
@@ -106,7 +106,7 @@ async function paymentCallback(req, res) {
       const { error: updateError } = await supabase
         .from("wallets")
         .update({ balance_cents: newBalance })
-        .eq("user_id", userId);
+        .eq("user_id", user.id);
 
       if (updateError) {
         console.error("❌ Balance update failed:", updateError);
