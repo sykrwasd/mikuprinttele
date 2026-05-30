@@ -84,8 +84,8 @@ async function paymentCallback(req, res) {
 
       // Credit the wallet in Supabase
       const { data: userId, error: fetchError } = await supabase
-        .from("id")
-        .select("users")
+        .from("users")
+        .select("id")
         .eq("telegram_id", telegramId)
         .single();
 
