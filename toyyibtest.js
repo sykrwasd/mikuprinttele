@@ -90,7 +90,7 @@ async function paymentCallback(req, res) {
         .single();
 
       const { data: wallets, error: walletError}  = await supabase
-        .from("wallet")
+        .from("wallets")
         .select("*")
         .eq("user_id", userId)
         .single();
