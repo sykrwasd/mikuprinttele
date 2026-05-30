@@ -83,17 +83,17 @@ async function paymentCallback(req, res) {
       console.log("UPDATED")
 
       // Credit the wallet in Supabase
-      const { data: userId, error: fetchError } = await supabase
-        .from("users")
-        .select("id")
-        .eq("telegram_id", telegramId)
-        .single();
+      let { data: user, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("telegram_id", telegramId)
+      .single();
 
-      const { data: wallets, error: walletError}  = await supabase
-        .from("wallets")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
+    const { data: wallets, error: walletError } = await supabase
+      .from("wallets")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
 
       console.log(wallets)
       if (fetchError) {
