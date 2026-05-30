@@ -4,15 +4,20 @@ const { paymentCallback } = require("./toyyibtest");
 
 const app = express();
 
-// Debug middleware
-app.use((req, res, next) => {
-  console.log("Headers:", req.headers);
-  next();
-});
-
-// Body parsers
-app.use(express.urlencoded({ extended: true, type: "*/*" }));
-app.use(express.json());
+// ✅ Body parsers — use `verify` to log raw body WITHOUT consuming the stream first
+app.use(
+  express.urlencoded({
+    extended: true,
+    type: "*/*",
+    verify: (req, res, buf, encoding) => {
+      const raw = buf.toString(encoding || "utf8");
+      console.log("📋 Content-Type:", req.headers["content-type"]);
+      console.log("📦 RAW BODY:", raw);
+      req.rawBody = raw;
+    },
+  })
+);
+app.use(express.json({ type: "application/json" }));
 
 // ✅ USE YOUR REAL CALLBACK LOGIC
 app.post("/payment/callback", paymentCallback);
