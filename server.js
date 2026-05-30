@@ -1,26 +1,19 @@
 require("dotenv").config();
 const express = require("express");
+const multer = require("multer");
 const { paymentCallback } = require("./toyyibtest");
 
 const app = express();
 
-// ✅ Body parsers — use `verify` to log raw body WITHOUT consuming the stream first
-app.use(
-  express.urlencoded({
-    extended: true,
-    type: "*/*",
-    verify: (req, res, buf, encoding) => {
-      const raw = buf.toString(encoding || "utf8");
-      console.log("📋 Content-Type:", req.headers["content-type"]);
-      console.log("📦 RAW BODY:", raw);
-      req.rawBody = raw;
-    },
-  })
-);
-app.use(express.json({ type: "application/json" }));
+// Parse multipart/form-data (what ToyyibPay actually sends)
+const upload = multer();
 
-// ✅ USE YOUR REAL CALLBACK LOGIC
-app.post("/payment/callback", paymentCallback);
+// Also support urlencoded just in case
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// ✅ USE YOUR REAL CALLBACK LOGIC — multer().none() parses multipart fields (no files)
+app.post("/payment/callback", upload.none(), paymentCallback);
 
 // Return URL (user redirect only)
 app.get("/payment/return", (req, res) => {

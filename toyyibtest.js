@@ -62,19 +62,21 @@ async function createToyyibBill(amountRM, telegramId) {
 }
 
 // ✅ Called by ToyyibPay via POST /payment/callback after payment
+// ToyyibPay sends multipart/form-data with these fields:
+// status / status_id, order_id, amount, refno, billcode, reason, hash, transaction_time
 async function paymentCallback(req, res) {
   console.log("📩 CALLBACK RECEIVED:");
   console.log(req.body);
 
-  const { status, billExternalReferenceNo, billpaymentAmount } = req.body;
+  const { status, order_id, amount } = req.body;
 
   // status "1" = successful payment
-  if (status == "1" && billExternalReferenceNo) {
+  if (status == "1" && order_id) {
     try {
       // Reference format: wallet_{telegramId}_{amountRM}_{timestamp}
-      const parts = billExternalReferenceNo.split("_");
+      const parts = order_id.split("_");
       const telegramId = parts[1];
-      const amountRM = parseFloat(parts[2]);
+      const amountRM = parseFloat(amount);
 
       console.log(`✅ Payment success for Telegram ID: ${telegramId}, RM${amountRM}`);
 
