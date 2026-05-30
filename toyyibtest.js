@@ -77,14 +77,22 @@ async function paymentCallback(req, res) {
       const parts = order_id.split("_");
       const telegramId = parts[1];
       const amountRM = parseFloat(amount);
+      const amount_in_cents = Math.round(amountRM * 100);
 
       console.log(`✅ Payment success for Telegram ID: ${telegramId}, RM${amountRM}`);
+      console.log("UPDATED")
 
       // Credit the wallet in Supabase
-      const { data: user, error: fetchError } = await supabase
-        .from("users")
-        .select("balance")
+      const { data: userId, error: fetchError } = await supabase
+        .from("id")
+        .select("users")
         .eq("telegram_id", telegramId)
+        .single();
+
+      const { data: wallets, error: walletError}  = await supabase
+        .from("wallet")
+        .select("*")
+        .eq("user_id", userId)
         .single();
 
       if (fetchError) {
@@ -92,12 +100,12 @@ async function paymentCallback(req, res) {
         return res.send("OK");
       }
 
-      const newBalance = (user.balance || 0) + amountRM;
+      const newBalance = (wallets.balance_cents || 0) + amount_in_cents;
 
       const { error: updateError } = await supabase
-        .from("users")
-        .update({ balance: newBalance })
-        .eq("telegram_id", telegramId);
+        .from("wallets")
+        .update({ balance_cents: newBalance })
+        .eq("user_id", userId);
 
       if (updateError) {
         console.error("❌ Balance update failed:", updateError);
