@@ -95,6 +95,7 @@ async function paymentCallback(req, res) {
         .eq("user_id", userId)
         .single();
 
+      console.log(wallets)
       if (fetchError) {
         console.error("❌ User not found:", fetchError);
         return res.send("OK");
