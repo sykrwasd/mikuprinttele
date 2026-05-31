@@ -35,8 +35,10 @@ function walletHandler(bot) {
     return ctx.reply(
       `💼 <b>Wallet</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n\n` +
-        `💰 Balance: RM ${(userBalance.balance_cents / 100).toFixed(2)}\n\n` +
-        `💸 <b>Top Up</b> — add funds to your account`,
+        `💳 Your current balance\n\n` +
+        `  💰 <b>RM ${(userBalance.balance_cents / 100).toFixed(2)}</b>\n\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `💸 <b>Top Up</b>  — add funds to print`,
       {
         parse_mode: "HTML",
         reply_markup: walletKeyboard,

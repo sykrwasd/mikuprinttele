@@ -23,9 +23,9 @@ function uploadHandler(bot) {
     // Validate: must be a PDF
     if (file.mime_type !== "application/pdf") {
       await ctx.reply(
-        `❌ <b>Invalid file type.</b>\n\n` +
-          `Only <b>PDF</b> files are accepted.\n` +
-          `Please upload a <code>.pdf</code> file.`,
+        `❌ <b>Wrong file type.</b>\n\n` +
+          `Only <b>PDF</b> files are supported.\n` +
+          `Please send a <code>.pdf</code> document.`,
         { parse_mode: "HTML", reply_markup: cancelKeyboard },
       );
       return;
@@ -89,7 +89,7 @@ function uploadHandler(bot) {
           `━━━━━━━━━━━━━━━━━━━\n\n` +
           `📄 <code>${safeFileName}</code>\n` +
           `📑 Pages: <b>${pagenum}</b>\n\n` +
-          `Now choose your <b>print preference</b> below. ⬇️`,
+          `Great! Now choose how you'd like to print it ⬇️`,
         { parse_mode: "HTML", reply_markup: printKeyboard },
       );
     } catch (err) {
@@ -106,7 +106,7 @@ function uploadHandler(bot) {
     const photoState = userState.get(ctx.from.id);
     if (!photoState || photoState.step !== "awaiting_upload") return;
     await ctx.reply(
-      `❌ Photos are not accepted.\n\nPlease send your file as a <b>PDF document</b>.`,
+      `📸 That's a photo, not a PDF.\n\nPlease send your file as a <b>.pdf document</b>.`,
       { parse_mode: "HTML", reply_markup: cancelKeyboard },
     );
   });

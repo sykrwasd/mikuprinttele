@@ -6,7 +6,7 @@ function topupHandler(bot) {
     try { await ctx.answerCallbackQuery(); } catch {}
 
     await ctx.reply(
-      `💸 <b>Top Up Wallet</b>\n━━━━━━━━━━━━━━━━━━━\n\nSend the amount you'd like to add.`,
+      `💸 <b>Top Up Wallet</b>\n━━━━━━━━━━━━━━━━━━━\n\nAdd credit to your MikuPrint wallet.\n\nChoose an amount below ⬇️`,
       {
         parse_mode: "HTML",
         reply_markup: topupKeyboard,
@@ -21,15 +21,21 @@ function topupHandler(bot) {
       const result = await createToyyibBill(amount, userId);
 
       if (!result?.paymentUrl) {
-        return ctx.reply("❌ Failed to create payment. Try again.");
+        return ctx.reply("❌ Couldn't create a payment link. Please try again.");
       }
 
       await ctx.reply(
-        `💳 Pay RM${amount} here:\n${result.paymentUrl}\n\n🧾 Ref: ${result.billCode}`
+        `💳 <b>Payment — RM${amount}.00</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━\n\n` +
+        `Tap the link below to complete your payment:\n` +
+        `👉 ${result.paymentUrl}\n\n` +
+        `🧾 Bill Ref: <code>${result.billCode}</code>\n\n` +
+        `⏳ <i>Complete the payment in your browser.\nYou'll be notified here once it's done.</i>`,
+        { parse_mode: "HTML" }
       );
     } catch (err) {
       console.error(err);
-      await ctx.reply("❌ Error creating payment.");
+      await ctx.reply("❌ Couldn't create a payment link. Please try again.");
     }
   }
 

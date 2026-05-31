@@ -12,11 +12,11 @@ function printHandler(bot) {
     ctx.reply(
       `🖨️ <b>Print a File</b>\n` +
       `━━━━━━━━━━━━━━━━━━━\n\n` +
-      `<b>Pricing:</b>\n` +
-      `• B&W — <code>RM 0.20</code> / page\n` +
-      `• Colour — <code>RM 0.50</code> / page\n\n` +
-      `📎 Please upload your <b>PDF file</b> below.\n` +
-      `<i>Only .pdf files are accepted.</i>`,
+      `📋 <b>Pricing</b>\n` +
+      `  🖤 Black &amp; White   <code>RM 0.20</code> / page\n` +
+      `  🎨 Colour          <code>RM 0.50</code> / page\n\n` +
+      `📎 Upload your PDF file below to get started.\n` +
+      `<i>⚠️ Only .pdf files are accepted.</i>`,
       {
         parse_mode: "HTML",
         reply_markup: cancelKeyboard,

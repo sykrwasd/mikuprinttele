@@ -94,10 +94,11 @@ function startHandler(bot) {
     ctx.reply(
       `🖨️ <b>MikuPrint</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n\n` +
-        `Hey <b>${name}</b>! Welcome to your campus print service.\n\n` +
-        `📄 <b>Print</b> — upload a file & get it printed\n` +
-        `💼 <b>Wallet</b> — manage your balance\n\n` +
-        `<i>What would you like to do?</i>`,
+        `👋 Hey <b>${name}</b>!\n\n` +
+        `Your all-in-one campus print service is ready.\n\n` +
+        `📄 <b>Print</b>    — upload &amp; print your file\n` +
+        `💼 <b>Wallet</b>   — manage your balance\n\n` +
+        `<i>What would you like to do?</i> ⬇️`,
       {
         parse_mode: "HTML",
         reply_markup: mainKeyboard,
@@ -122,10 +123,11 @@ function startHandler(bot) {
     ctx.reply(
       `🖨️ <b>MikuPrint</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n\n` +
-        `Hey <b>${name}</b>! Welcome to your campus print service.\n\n` +
-        `📄 <b>Print</b> — upload a file & get it printed\n` +
-        `💼 <b>Wallet</b> — manage your balance\n\n` +
-        `<i>What would you like to do?</i>`,
+        `👋 Hey <b>${name}</b>!\n\n` +
+        `Your all-in-one campus print service is ready.\n\n` +
+        `📄 <b>Print</b>    — upload &amp; print your file\n` +
+        `💼 <b>Wallet</b>   — manage your balance\n\n` +
+        `<i>What would you like to do?</i> ⬇️`,
       {
         parse_mode: "HTML",
         reply_markup: mainKeyboard,

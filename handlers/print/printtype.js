@@ -60,13 +60,14 @@ function printTypeHandler(bot) {
     await ctx.reply(
       `📝 <b>Order Summary</b>\n` +
       `━━━━━━━━━━━━━━━━━━━\n\n` +
-      `📄 File: <code>${fileName}</code>\n` +
-      `📑 Pages: <b>${pages}</b>\n` +
-      `🖼️ Type: <b>Black &amp; White</b>\n` +
-      `💵 Price per page: <code>RM ${PRICE_BW.toFixed(2)}</code>\n\n` +
-      `🧾 <b>Estimated Total: RM ${total}</b>\n` +
-      `💰 <b>Account Balance: RM ${balance}</b>\n\n` +
-      `Tap <b>Confirm</b> to place your order ⬇️`,
+      `📄 <code>${fileName}</code>\n` +
+      `📑 ${pages} pages  ·  🖤 Black &amp; White\n\n` +
+      `💵 RM ${PRICE_BW.toFixed(2)} × ${pages} pages = <b>RM ${total}</b>\n\n` +
+      `━━━━━━━━━━━━━━━━━━━\n` +
+      `💰 Wallet balance:   <b>RM ${balance.toFixed(2)}</b>\n` +
+      `🧾 Estimated total:  <b>RM ${total}</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━\n\n` +
+      `Ready to print? Tap <b>Confirm</b> ⬇️`,
       { parse_mode: "HTML", reply_markup: confirmKeyboard }
     );
   });
@@ -87,12 +88,13 @@ function printTypeHandler(bot) {
     await ctx.reply(
       `📝 <b>Order Summary</b>\n` +
       `━━━━━━━━━━━━━━━━━━━\n\n` +
-      `📄 File: <code>${fileName}</code>\n` +
-      `📑 Pages: <b>${pages}</b>\n` +
-      `🎨 Type: <b>Colour</b>\n` +
-      `💵 Price per page: <code>RM ${PRICE_COLOUR.toFixed(2)}</code>\n\n` +
-      `🧾 <b>Estimated Total: RM ${total}</b>\n\n` +
-      `Tap <b>Confirm</b> to place your order ⬇️`,
+      `📄 <code>${fileName}</code>\n` +
+      `📑 ${pages} pages  ·  🎨 Colour\n\n` +
+      `💵 RM ${PRICE_COLOUR.toFixed(2)} × ${pages} pages = <b>RM ${total}</b>\n\n` +
+      `━━━━━━━━━━━━━━━━━━━\n` +
+      `🧾 Estimated total:  <b>RM ${total}</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━\n\n` +
+      `Ready to print? Tap <b>Confirm</b> ⬇️`,
       { parse_mode: "HTML", reply_markup: confirmKeyboard }
     );
   });
@@ -103,7 +105,7 @@ function printTypeHandler(bot) {
     const state = userState.get(ctx.from.id);
     if (!state || state.step !== "choose_print_type") {
       await ctx.reply(
-        `⚠️ No active print job found.\n\nUse /start to begin a new one.`,
+        `⚠️ No active print job found.\n\nStart a new one with /start or tap Home below.`,
         { reply_markup: homeKeyboard }
       );
       return;
@@ -114,9 +116,9 @@ function printTypeHandler(bot) {
     await ctx.reply(
       `🔄 <b>Change Preference</b>\n` +
       `━━━━━━━━━━━━━━━━━━━\n\n` +
-      `📄 File: <code>${fileName}</code>\n` +
-      `📑 Pages: <b>${pages}</b>\n\n` +
-      `Choose your new print preference below:`,
+      `📄 <code>${fileName}</code>\n` +
+      `📑 ${pages} pages\n\n` +
+      `Choose your print preference below:`,
       { parse_mode: "HTML", reply_markup: printKeyboard }
     );
   });
