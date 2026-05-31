@@ -40,6 +40,20 @@ app.get("/payment/return", async (req, res) => {
       ? `✅ *Payment Successful!*\n\nYour wallet has been topped up with *RM${amountRM}*.\n\n🧾 Ref: \`${billcode}\`\n\nYou can now use your balance to print!`
       : `❌ *Payment Failed*\n\nYour payment of RM${amountRM} was not completed.\n\nPlease try again from the bot.\n\n🧾 Ref: \`${billcode}\``;
 
+    const keyboard = isSuccess
+      ? {
+          inline_keyboard: [
+            [{ text: "💰 Check Balance", callback_data: "checkbal" }],
+            [{ text: "🏠 Main Menu", callback_data: "home" }],
+          ],
+        }
+      : {
+          inline_keyboard: [
+            [{ text: "🔄 Try Again", callback_data: "topup" }],
+            [{ text: "🏠 Main Menu", callback_data: "home" }],
+          ],
+        };
+
     try {
       await fetch(
         `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
@@ -50,6 +64,7 @@ app.get("/payment/return", async (req, res) => {
             chat_id: telegramId,
             text: message,
             parse_mode: "Markdown",
+            reply_markup: keyboard,
           }),
         }
       );
