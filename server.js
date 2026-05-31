@@ -17,10 +17,24 @@ app.post("/payment/callback", upload.none(), paymentCallback);
 
 // Return URL (user redirect only)
 app.get("/payment/return", (req, res) => {
+  console.log("RETURN URL HIT");
+  console.log(req.query);
 
-  const data = req.body
+  const {
+    status_id,
+    billcode,
+    order_id,
+    msg,
+    transaction_id,
+  } = req.query;
 
-  res.send(data);
+  res.json({
+    status_id,
+    billcode,
+    order_id,
+    msg,
+    transaction_id,
+  });
 });
 
 // Health check
