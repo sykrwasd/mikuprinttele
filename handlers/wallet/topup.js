@@ -1,4 +1,4 @@
-const { createToyyibBill } = require("../../toyyibtest");
+const { createToyyibBill } = require("../../toyyib");
 const { topupKeyboard } = require("../../keyboard");
 
 function topupHandler(bot) {

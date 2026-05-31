@@ -32,13 +32,10 @@ async function createToyyibBill(amountRM, telegramId) {
           billEmail: "test@example.com",
           billPhone: "0123456789",
 
-          // ✅ ToyyibPay will POST to this URL after payment
           billCallbackUrl: callbackUrl,
 
-          // ✅ User will be redirected here after the payment page
           billReturnUrl: returnUrl,
 
-          // ✅ Charge buyer (not seller)
           billChargeToCustomer: "1",
         }),
       }
@@ -61,9 +58,6 @@ async function createToyyibBill(amountRM, telegramId) {
   }
 }
 
-// ✅ Called by ToyyibPay via POST /payment/callback after payment
-// ToyyibPay sends multipart/form-data with these fields:
-// status / status_id, order_id, amount, refno, billcode, reason, hash, transaction_time
 async function paymentCallback(req, res) {
   console.log("📩 CALLBACK RECEIVED:");
   console.log(req.body);
@@ -73,7 +67,6 @@ async function paymentCallback(req, res) {
   // status "1" = successful payment
   if (status == "1" && order_id) {
     try {
-      // Reference format: wallet_{telegramId}_{amountRM}_{timestamp}
       const parts = order_id.split("_");
       const telegramId = parts[1];
       const amountRM = parseFloat(amount);
@@ -82,7 +75,6 @@ async function paymentCallback(req, res) {
       console.log(`✅ Payment success for Telegram ID: ${telegramId}, RM${amountRM}`);
       console.log("UPDATED")
 
-      // Credit the wallet in Supabase
       let { data: user, error:fetchError } = await supabase
       .from("users")
       .select("*")

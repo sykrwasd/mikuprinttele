@@ -17,7 +17,10 @@ app.post("/payment/callback", upload.none(), paymentCallback);
 
 // Return URL (user redirect only)
 app.get("/payment/return", (req, res) => {
-  res.send("✅ Payment received! Return to Telegram.");
+
+  const data = req.body
+
+  res.send(data);
 });
 
 // Health check
