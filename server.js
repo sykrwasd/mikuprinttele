@@ -43,7 +43,7 @@ app.get("/payment/return", async (req, res) => {
     const keyboard = isSuccess
       ? {
           inline_keyboard: [
-            [{ text: "💰 Check Balance", callback_data: "checkbal" }],
+            [{ text: "💰 Check Balance", callback_data: "wallet" }],
             [{ text: "🏠 Main Menu", callback_data: "home" }],
           ],
         }
