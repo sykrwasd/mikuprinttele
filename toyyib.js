@@ -141,15 +141,34 @@ async function paymentCallback(req, res) {
         transaction_time,
       });
 
-      await notifyAdmin(`
-      💰 New Payment Received
+      const timeStr = transaction_time
+        ? new Date(transaction_time).toLocaleString("en-MY", {
+            timeZone: "Asia/Kuala_Lumpur",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          }) + " MYT"
+        : "—";
 
-      👤 Telegram ID: ${telegramId}
-      💵 Amount: RM${amountRM}
-      🧾 Order ID: ${order_id}
-      💳 Bill Code: ${billcode}
-      📅 Time: ${transaction_time}
-      `);
+      await notifyAdmin(
+`💰 *New Payment Received*
+━━━━━━━━━━━━━━━━━━━
+
+👤 Telegram ID:  \`${telegramId}\`
+💵 Amount:       *RM ${amountRM.toFixed(2)}*
+
+━━━━━━━━━━━━━━━━━━━
+🧾 Order ID:     \`${order_id}\`
+💳 Bill Code:    \`${billcode}\`
+🏦 FPX Ref:      \`${fpx_transaction_id ?? "—"}\`
+
+━━━━━━━━━━━━━━━━━━━
+🕐 Time: ${timeStr}`
+      );
 
       console.log(`✅ Wallet credited RM${amountRM}`);
     } catch (err) {

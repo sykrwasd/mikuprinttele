@@ -40,8 +40,8 @@ const confirmKeyboard = new InlineKeyboard()
   .text("❌ Cancel", "home");
 
 const topupKeyboard = new InlineKeyboard()
-  .text("RM10", "ten")
-  .text("RM5", "five")
+  .text("💵 RM 10.00", "ten")
+  .text("💵 RM 5.00", "five")
   .row()
   .text("❌ Cancel", "home");
 
