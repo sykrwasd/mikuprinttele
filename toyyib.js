@@ -1,5 +1,6 @@
 require("dotenv").config();
 const supabase = require("./database/db");
+const notifyAdmin = require("./admin");
 
 async function createToyyibBill(amountRM, telegramId) {
   try {
@@ -38,7 +39,7 @@ async function createToyyibBill(amountRM, telegramId) {
 
           billChargeToCustomer: "1",
         }),
-      }
+      },
     );
 
     const data = await response.json();
@@ -62,51 +63,97 @@ async function paymentCallback(req, res) {
   console.log("📩 CALLBACK RECEIVED:");
   console.log(req.body);
 
-  const { status, order_id, amount } = req.body;
+  const {
+    refno,
+    status,
+    reason,
+    billcode,
+    order_id,
+    amount,
+    status_id,
+    msg,
+    transaction_id,
+    fpx_transaction_id,
+    hash,
+    transaction_time,
+  } = req.body;
 
   // status "1" = successful payment
   if (status == "1" && order_id) {
     try {
       const parts = order_id.split("_");
       const telegramId = parts[1];
+
       const amountRM = parseFloat(amount);
       const amount_in_cents = Math.round(amountRM * 100);
 
-      console.log(`✅ Payment success for Telegram ID: ${telegramId}, RM${amountRM}`);
-      console.log("UPDATED")
+      let { data: user, error: fetchError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("telegram_id", telegramId)
+        .single();
 
-      let { data: user, error:fetchError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("telegram_id", telegramId)
-      .single();
-
-    const { data: wallets, error: walletError } = await supabase
-      .from("wallets")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
-
-      console.log(wallets)
-      if (fetchError) {
-        console.error("❌ User not found:", fetchError);
+      if (fetchError || !user) {
+        console.error("❌ User not found");
         return res.send("OK");
       }
 
-      const newBalance = (wallets.balance_cents || 0) + amount_in_cents;
+      const { data: existing } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("order_id", order_id)
+        .single();
 
-      const { error: updateError } = await supabase
+      if (existing) {
+        console.log("⚠️ Duplicate callback ignored");
+        return res.send("OK");
+      }
+
+      const { data: wallet, error: walletError } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (walletError || !wallet) {
+        console.error("❌ Wallet not found");
+        return res.send("OK");
+      }
+
+      const newBalance = (wallet.balance_cents || 0) + amount_in_cents;
+
+      await supabase
         .from("wallets")
         .update({ balance_cents: newBalance })
         .eq("user_id", user.id);
 
-      if (updateError) {
-        console.error("❌ Balance update failed:", updateError);
-      } else {
-        console.log(`✅ Wallet credited! New balance: RM${(newBalance/100).toFixed(2)}`);
-      }
+      await supabase.from("payments").insert({
+        user_id: user.id,
+        order_id,
+        billcode,
+        refno,
+        status,
+        status_id,
+        amount: parseFloat(amount),
+        transaction_id,
+        fpx_transaction_id,
+        hash,
+        transaction_time,
+      });
+
+      await notifyAdmin(`
+      💰 New Payment Received
+
+      👤 Telegram ID: ${telegramId}
+      💵 Amount: RM${amountRM}
+      🧾 Order ID: ${order_id}
+      💳 Bill Code: ${billcode}
+      📅 Time: ${transaction_time}
+      `);
+
+      console.log(`✅ Wallet credited RM${amountRM}`);
     } catch (err) {
-      console.error("❌ Callback processing error:", err);
+      console.error("❌ Callback error:", err);
     }
   } else {
     console.log("❌ Payment NOT successful. Status:", status);

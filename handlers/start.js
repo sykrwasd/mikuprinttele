@@ -3,21 +3,6 @@ const supabase = require("../database/db");
 const userState = require("../state");
 const notifyAdmin = require("../admin")
 
-// async function notifyAdmin(message) {
-//   await fetch(
-//     `https://api.telegram.org/bot${ADMIN_TELEGRAM_BOT}/sendMessage`,
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         chat_id: ADMIN_CHAT_ID,
-//         text: message,
-//       }),
-//     }
-//   );
-// }
 
 
 async function checkDB(ctx) {
