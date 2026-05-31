@@ -103,7 +103,7 @@ async function paymentCallback(req, res) {
       if (updateError) {
         console.error("❌ Balance update failed:", updateError);
       } else {
-        console.log(`✅ Wallet credited! New balance: RM${newBalance}`);
+        console.log(`✅ Wallet credited! New balance: RM${(newBalance/100).toFixed(2)}`);
       }
     } catch (err) {
       console.error("❌ Callback processing error:", err);
