@@ -1,5 +1,5 @@
-
 require("dotenv").config();
+
 async function notifyAdmin(message) {
   await fetch(
     `https://api.telegram.org/bot${process.env.ADMIN_TELEGRAM_BOT}/sendMessage`,
@@ -11,9 +11,10 @@ async function notifyAdmin(message) {
       body: JSON.stringify({
         chat_id: process.env.ADMIN_CHAT_ID,
         text: message,
+        parse_mode: "HTML",
       }),
     }
   );
 }
 
-module.exports = notifyAdmin
+module.exports = notifyAdmin;
