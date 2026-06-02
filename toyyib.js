@@ -150,26 +150,31 @@ async function paymentCallback(req, res) {
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
-            hour12: false,
+            hour12: true,
           }) + " MYT"
         : "—";
 
-      await notifyAdmin(
-`💰 *New Payment Received*
-━━━━━━━━━━━━━━━━━━━
+  await notifyAdmin(
+`💰 <b>New Payment Received</b>
+━━━━━━━━━━━━━━━━━━━━━━
 
-👤 Telegram ID:  \`${telegramId}\`
-💵 Amount:       *RM ${amountRM.toFixed(2)}*
+👤 <b>User</b>
+└ Telegram ID: <code>${telegramId}</code>
 
-━━━━━━━━━━━━━━━━━━━
-🧾 Order ID:     \`${order_id}\`
-💳 Bill Code:    \`${billcode}\`
-🏦 FPX Ref:      \`${fpx_transaction_id ?? "—"}\`
+💵 <b>Transaction</b>
+└ Amount: <b>RM ${amountRM.toFixed(2)}</b>
 
-━━━━━━━━━━━━━━━━━━━
-🕐 Time: ${timeStr}`
-      );
+🧾 <b>Reference</b>
+└ Order ID: <code>${order_id}</code>
+└ Bill Code: <code>${billcode}</code>
+└ FPX Ref: <code>${fpx_transaction_id ?? "—"}</code>
 
+🕐 <b>Time</b>
+└ ${timeStr}
+
+━━━━━━━━━━━━━━━━━━━━━━
+✅ Status: <b>SUCCESS</b>`
+);
       console.log(`✅ Wallet credited RM${amountRM}`);
     } catch (err) {
       console.error("❌ Callback error:", err);
@@ -181,6 +186,8 @@ async function paymentCallback(req, res) {
   // ToyyibPay requires a 200 OK response
   res.send("OK");
 }
+
+
 
 // ✅ export both properly
 module.exports = {

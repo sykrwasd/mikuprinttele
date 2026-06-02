@@ -9,6 +9,7 @@ const confirmHandler = require("./handlers/print/confirm");
 const topupHandler = require("./handlers/wallet/topup")
 const checkBalHandler = require("./handlers/wallet/checkbal")
 const testHandler = require("./handlers/test")
+const customAmountHandler = require("./handlers/wallet/custom_amount")
 
 require("dotenv").config();
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
@@ -22,6 +23,7 @@ confirmHandler(bot);
 topupHandler(bot)
 checkBalHandler(bot)
 testHandler(bot)
+customAmountHandler(bot)
 
 const userState = require("./state");
 const { mainKeyboard, cancelKeyboard } = require("./keyboard");
