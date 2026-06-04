@@ -15,13 +15,17 @@ function walletHandler(bot) {
       .eq("telegram_id", telegramId)
       .single();
 
+    if (error || !user) {
+      return ctx.reply("❌ Could not find your account. Use /start to register.");
+    }
+
     const { data: userBalance, error: walletError } = await supabase
       .from("wallets")
       .select("*")
       .eq("user_id", user.id)
       .single();
 
-    if (walletError) {
+    if (walletError || !userBalance) {
       console.error(walletError);
       return ctx.reply("❌ Unable to fetch wallet.");
     }

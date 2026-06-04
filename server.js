@@ -15,6 +15,16 @@ app.use(express.json());
 // ✅ USE YOUR REAL CALLBACK LOGIC — multer().none() parses multipart fields (no files)
 app.post("/payment/callback", upload.none(), paymentCallback);
 
+// Escape special HTML characters to prevent XSS from query parameters.
+function esc(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 // Return URL (user redirect after payment)
 app.get("/payment/return", async (req, res) => {
   console.log("RETURN URL HIT");
@@ -174,10 +184,10 @@ app.get("/payment/return", async (req, res) => {
     </div>
     <h1>Payment Successful!</h1>
     <p class="subtitle">Your wallet has been topped up. You're all set to start printing.</p>
-    <div class="badge">✓ RM${amountRM || "—"} Added</div>
+    <div class="badge">✓ RM${esc(amountRM) || "—"} Added</div>
     <div class="details">
-      ${billcode ? `<p>Bill Code &nbsp;<span>${billcode}</span></p>` : ""}
-      ${transaction_id ? `<p>Transaction &nbsp;<span>${transaction_id}</span></p>` : ""}
+      ${billcode ? `<p>Bill Code &nbsp;<span>${esc(billcode)}</span></p>` : ""}
+      ${transaction_id ? `<p>Transaction &nbsp;<span>${esc(transaction_id)}</span></p>` : ""}
     </div>
     <p class="close-note">You've been notified in <strong>Telegram</strong>.<br/>You can close this page now.</p>
   </div>
@@ -285,8 +295,8 @@ app.get("/payment/return", async (req, res) => {
     <p class="subtitle">Your payment could not be completed. Please try again from the bot.</p>
     <div class="badge">✕ Payment Not Completed</div>
     <div class="details">
-      ${billcode ? `<p>Bill Code &nbsp;<span>${billcode}</span></p>` : ""}
-      ${msg ? `<p>Reason &nbsp;<span>${msg}</span></p>` : ""}
+      ${billcode ? `<p>Bill Code &nbsp;<span>${esc(billcode)}</span></p>` : ""}
+      ${msg ? `<p>Reason &nbsp;<span>${esc(msg)}</span></p>` : ""}
     </div>
     <p class="close-note">Go back to <strong>Telegram</strong> and tap Top Up again.<br/>You can close this page now.</p>
   </div>

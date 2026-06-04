@@ -1,6 +1,28 @@
 require("dotenv").config();
+const crypto = require("crypto");
 const supabase = require("./database/db");
 const notifyAdmin = require("./admin");
+
+// ToyyibPay signs each callback as md5(secretKey + categoryCode + billcode + amount + status_id).
+// Reject anything that doesn't match — this is the primary defence against fake callbacks.
+function verifyToyyibHash(body) {
+  const { billcode, amount, status_id, hash } = body;
+  if (!hash) return false;
+  const expected = crypto
+    .createHash("md5")
+    .update(
+      process.env.TOYYIBPAY_SECRET_KEY +
+        process.env.TOYYIBPAY_CATEGORY_CODE +
+        billcode +
+        amount +
+        status_id,
+    )
+    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(expected, "utf8"),
+    Buffer.from(hash, "utf8"),
+  );
+}
 
 async function createToyyibBill(amountRM, telegramId) {
   try {
@@ -78,14 +100,27 @@ async function paymentCallback(req, res) {
     transaction_time,
   } = req.body;
 
+  // Fix 1: reject any callback whose signature doesn't match
+  if (!verifyToyyibHash(req.body)) {
+    console.warn("⚠️ Rejected callback with invalid hash");
+    return res.send("OK");
+  }
+
   // status "1" = successful payment
   if (status == "1" && order_id) {
     try {
       const parts = order_id.split("_");
       const telegramId = parts[1];
 
-      const amountRM = parseFloat(amount);
+      // Fix 2: use the amount we encoded at bill-creation time, not the
+      // attacker-controllable req.body.amount field.
+      const amountRM = parseFloat(parts[2]);
       const amount_in_cents = Math.round(amountRM * 100);
+
+      if (!telegramId || isNaN(amountRM) || amountRM <= 0) {
+        console.error("❌ Malformed order_id:", order_id);
+        return res.send("OK");
+      }
 
       let { data: user, error: fetchError } = await supabase
         .from("users")
@@ -98,17 +133,35 @@ async function paymentCallback(req, res) {
         return res.send("OK");
       }
 
-      const { data: existing } = await supabase
-        .from("payments")
-        .select("*")
-        .eq("order_id", order_id)
-        .single();
+      // Fix 3: atomic duplicate guard — insert first, then credit.
+      // The payments table must have a UNIQUE constraint on order_id.
+      // If two callbacks race, the second insert will fail with a conflict
+      // error and be silently dropped before any wallet update happens.
+      const { error: insertError } = await supabase.from("payments").insert({
+        user_id: user.id,
+        order_id,
+        billcode,
+        refno,
+        status,
+        status_id,
+        amount: amountRM,
+        transaction_id,
+        fpx_transaction_id,
+        hash,
+        transaction_time,
+      });
 
-      if (existing) {
-        console.log("⚠️ Duplicate callback ignored");
+      if (insertError) {
+        if (insertError.code === "23505") {
+          // unique_violation — duplicate callback, already processed
+          console.log("⚠️ Duplicate callback ignored for order_id:", order_id);
+        } else {
+          console.error("❌ Failed to record payment:", insertError);
+        }
         return res.send("OK");
       }
 
+      // Only credit the wallet after the payment row is durably committed.
       const { data: wallet, error: walletError } = await supabase
         .from("wallets")
         .select("*")
@@ -126,20 +179,6 @@ async function paymentCallback(req, res) {
         .from("wallets")
         .update({ balance_cents: newBalance })
         .eq("user_id", user.id);
-
-      await supabase.from("payments").insert({
-        user_id: user.id,
-        order_id,
-        billcode,
-        refno,
-        status,
-        status_id,
-        amount: parseFloat(amount),
-        transaction_id,
-        fpx_transaction_id,
-        hash,
-        transaction_time,
-      });
 
       const timeStr = transaction_time
         ? new Date(transaction_time).toLocaleString("en-MY", {
