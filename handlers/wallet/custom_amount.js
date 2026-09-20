@@ -1,4 +1,4 @@
-const { createToyyibBill } = require("../../toyyib");
+const { createToyyibBill } = require("../../utils/toyyib");
 const { customAmountKeyboard } = require("../../keyboard");
 const userState = require("../../state");
 

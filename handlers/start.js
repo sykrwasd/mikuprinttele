@@ -1,7 +1,7 @@
 const { mainKeyboard } = require("../keyboard");
 const supabase = require("../database/db");
 const userState = require("../state");
-const notifyAdmin = require("../admin")
+const notifyAdmin = require("../utils/admin")
 
 
 
