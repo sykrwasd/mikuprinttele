@@ -3,20 +3,17 @@ const crypto = require("crypto");
 const supabase = require("../database/db");
 const notifyAdmin = require("./admin");
 
-// ToyyibPay signs each callback as md5(secretKey + categoryCode + billcode + amount + status_id).
+// ToyyibPay signs each callback as md5(secretKey + status + order_id + refno + "ok")
+// — confirmed against https://toyyibpay.com/apireference/. (The previous
+// formula here — secretKey + categoryCode + billcode + amount + status_id —
+// was wrong and rejected every real callback ToyyibPay ever sent.)
 // Reject anything that doesn't match — this is the primary defence against fake callbacks.
 function verifyToyyibHash(body) {
-  const { billcode, amount, status_id, hash } = body;
+  const { status, order_id, refno, hash } = body;
   if (!hash) return false;
   const expected = crypto
     .createHash("md5")
-    .update(
-      process.env.TOYYIBPAY_SECRET_KEY +
-        process.env.TOYYIBPAY_CATEGORY_CODE +
-        billcode +
-        amount +
-        status_id,
-    )
+    .update(process.env.TOYYIBPAY_SECRET_KEY + status + order_id + refno + "ok")
     .digest("hex");
   return crypto.timingSafeEqual(
     Buffer.from(expected, "utf8"),

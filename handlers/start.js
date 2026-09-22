@@ -75,12 +75,7 @@ function startHandler(bot) {
 
     const state = userState.get(ctx.from.id) || {};
     userState.set(ctx.from.id, { ...state, userid: user.id});
-    console.log(userState)
-
-      const data = await fetch("https://mikuprinterserver.xyz/test")
-  const res = await data.json()
-    const clean =JSON.stringify(res);
-
+   
 
 
     ctx.reply(
@@ -90,8 +85,7 @@ function startHandler(bot) {
         `Your all-in-one campus print service is ready.\n\n` +
         `📄 <b>Print</b>    — upload &amp; print your file\n` +
         `💼 <b>Wallet</b>   — manage your balance\n\n` +
-        `<i>What would you like to do?</i> ⬇️`+
-        `REspinsetest:${clean}`,
+        `<i>What would you like to do?</i> ⬇️`,
       {
         parse_mode: "HTML",
         reply_markup: mainKeyboard,
