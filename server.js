@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
-const { paymentCallback } = require("./toyyib");
+const { paymentCallback } = require("./utils/toyyib");
 
 const app = express();
 

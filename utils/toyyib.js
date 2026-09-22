@@ -1,6 +1,6 @@
 require("dotenv").config();
 const crypto = require("crypto");
-const supabase = require("./database/db");
+const supabase = require("../database/db");
 const notifyAdmin = require("./admin");
 
 // ToyyibPay signs each callback as md5(secretKey + categoryCode + billcode + amount + status_id).
@@ -117,68 +117,61 @@ async function paymentCallback(req, res) {
       const amountRM = parseFloat(parts[2]);
       const amount_in_cents = Math.round(amountRM * 100);
 
-      if (!telegramId || isNaN(amountRM) || amountRM <= 0) {
+      if (!/^\d+$/.test(telegramId || "") || isNaN(amountRM) || amountRM <= 0) {
         console.error("❌ Malformed order_id:", order_id);
         return res.send("OK");
       }
 
-      let { data: user, error: fetchError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("telegram_id", telegramId)
-        .single();
+      // Fix 3: record the payment and credit the wallet in ONE transaction.
+      // The unique index on payments.order_id makes a duplicate callback a
+      // no-op, and the credit is an in-DB increment so callbacks can't race.
+      const { data: result, error: creditError } = await supabase.rpc(
+        "credit_wallet_payment",
+        {
+          p_telegram_id: telegramId,
+          p_amount_cents: amount_in_cents,
+          p_payment: {
+            order_id,
+            billcode,
+            refno,
+            status,
+            status_id,
+            amount: amountRM,
+            transaction_id,
+            fpx_transaction_id,
+            hash,
+            transaction_time,
+          },
+        },
+      );
 
-      if (fetchError || !user) {
-        console.error("❌ User not found");
-        return res.send("OK");
-      }
-
-      // Fix 3: atomic duplicate guard — insert first, then credit.
-      // The payments table must have a UNIQUE constraint on order_id.
-      // If two callbacks race, the second insert will fail with a conflict
-      // error and be silently dropped before any wallet update happens.
-      const { error: insertError } = await supabase.from("payments").insert({
-        user_id: user.id,
-        order_id,
-        billcode,
-        refno,
-        status,
-        status_id,
-        amount: amountRM,
-        transaction_id,
-        fpx_transaction_id,
-        hash,
-        transaction_time,
-      });
-
-      if (insertError) {
-        if (insertError.code === "23505") {
-          // unique_violation — duplicate callback, already processed
-          console.log("⚠️ Duplicate callback ignored for order_id:", order_id);
-        } else {
-          console.error("❌ Failed to record payment:", insertError);
+      if (creditError) {
+        // Nothing was committed, but the user HAS paid — tell the admin.
+        console.error("❌ credit_wallet_payment failed:", creditError);
+        try {
+          await notifyAdmin(
+            `🚨 <b>Payment received but wallet NOT credited</b>\n\n` +
+              `Telegram ID: <code>${telegramId}</code>\n` +
+              `Amount: <b>RM ${amountRM.toFixed(2)}</b>\n` +
+              `Order ID: <code>${order_id}</code>\n` +
+              `Bill Code: <code>${billcode}</code>\n\n` +
+              `Credit manually or ask ToyyibPay to resend the callback.`,
+          );
+        } catch (notifyErr) {
+          console.error("❌ Failed to alert admin:", notifyErr);
         }
         return res.send("OK");
       }
 
-      // Only credit the wallet after the payment row is durably committed.
-      const { data: wallet, error: walletError } = await supabase
-        .from("wallets")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (walletError || !wallet) {
-        console.error("❌ Wallet not found");
+      if (!result.ok) {
+        console.error("❌ Payment not credited:", result.reason, order_id);
         return res.send("OK");
       }
 
-      const newBalance = (wallet.balance_cents || 0) + amount_in_cents;
-
-      await supabase
-        .from("wallets")
-        .update({ balance_cents: newBalance })
-        .eq("user_id", user.id);
+      if (result.duplicate) {
+        console.log("⚠️ Duplicate callback ignored for order_id:", order_id);
+        return res.send("OK");
+      }
 
       const timeStr = transaction_time
         ? new Date(transaction_time).toLocaleString("en-MY", {

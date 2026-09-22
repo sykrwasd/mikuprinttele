@@ -1,7 +1,7 @@
 const { mainKeyboard } = require("../keyboard");
 const supabase = require("../database/db");
 const userState = require("../state");
-const notifyAdmin = require("../admin")
+const notifyAdmin = require("../utils/admin")
 
 
 
@@ -24,6 +24,7 @@ async function checkDB(ctx) {
 
 🧑 Username: @${ctx.from.username ?? "N/A"}
 🆔 Telegram ID: ${telegramId}
+
 
 📅 First Seen: ${new Date().toLocaleString("en-MY", {
   timeZone: "Asia/Kuala_Lumpur",
@@ -76,6 +77,12 @@ function startHandler(bot) {
     userState.set(ctx.from.id, { ...state, userid: user.id});
     console.log(userState)
 
+      const data = await fetch("https://mikuprinterserver.xyz/test")
+  const res = await data.json()
+    const clean =JSON.stringify(res);
+
+
+
     ctx.reply(
       `🖨️ <b>MikuPrint</b>\n` +
         `━━━━━━━━━━━━━━━━━━━\n\n` +
@@ -83,7 +90,8 @@ function startHandler(bot) {
         `Your all-in-one campus print service is ready.\n\n` +
         `📄 <b>Print</b>    — upload &amp; print your file\n` +
         `💼 <b>Wallet</b>   — manage your balance\n\n` +
-        `<i>What would you like to do?</i> ⬇️`,
+        `<i>What would you like to do?</i> ⬇️`+
+        `REspinsetest:${clean}`,
       {
         parse_mode: "HTML",
         reply_markup: mainKeyboard,
